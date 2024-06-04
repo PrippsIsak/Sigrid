@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  python:
+    build:
+      context: .
+      dockerfile: dockerfiles/python.dockerfile
+    ports:
+      - '5001:80'
+    volumes: 
+      - './backend/src:/backend/src'
+
+  flutter:
+    build:
+      context: .
+      dockerfile: dockerfiles/flutter.dockerfile
+    ports:
+      - '3000:80'  # Expose port for Flutter web app if needed
+    volumes:
+      - './coffe_app/lib:/frontend/src'
