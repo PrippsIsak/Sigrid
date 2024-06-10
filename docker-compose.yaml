@@ -9,6 +9,7 @@ services:
       - '5001:80'
     volumes: 
       - './backend/src:/app'
+      - './backend/requirements.txt:/app/requirements.txt'
     working_dir: /app
 
   flutter:

@@ -1,23 +1,35 @@
-git#include <ESP8266WiFi.h>
+#include <ESP8266WiFi.h>
 #include <ESPAsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 
-const char *ssid = "Pixel_4625";
-const char *password = "isakaxelsson";
+const char *ssid = "NAME";
+const char *password = "PASSWORD";
 
 AsyncWebSocket ws("/ws");
 AsyncWebServer server(5002);
 
 
 void initWifi() {
-  WiFi.mode(WIFI_STA);  // Corrected 'Wifi' to 'WiFi'
+  WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
   Serial.println("Connecting to WiFi...");
+  int attempts = 0;
   while (WiFi.status() != WL_CONNECTED) {
-    Serial.println("trying to connect..");
-    delay(10000);
+    delay(1000);
+    Serial.print(".");
+    attempts++;
+    if(attempts > 20) { // Print debug info if unable to connect after 20 seconds
+      Serial.println("Failed to connect to WiFi");
+      Serial.println("WiFi status: " + String(WiFi.status()));
+      Serial.println("WiFi SSID: " + WiFi.SSID());
+      Serial.println("WiFi password: " + WiFi.psk());
+      break;
+    }
   }
-  Serial.println(WiFi.localIP());
+  if(WiFi.status() == WL_CONNECTED) {
+    Serial.println("\nConnected to WiFi");
+    Serial.println("IP Address: " + WiFi.localIP().toString());
+  }
 }
 
 void notifyLight(bool state) {
@@ -55,7 +67,6 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
 void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len) {
   Serial.println("inside event");
   switch (type) {
-    
     case WS_EVT_CONNECT:
       Serial.printf("WebSocket client #%u connected from %s\n", client->id(), client->remoteIP().toString().c_str());
       break;

@@ -2,9 +2,12 @@ FROM python:3.8-slim
 
 WORKDIR /app
 
-COPY backend/requirements.txt .
-COPY backend/src .
-
+# Copy requirements and install dependencies
+COPY backend/requirements.txt /app/
 RUN pip install -r requirements.txt --verbose
 
-CMD [ "python", "./backend/src/main"]
+# Copy the source code
+
+COPY backend/src ./src
+# Run the main Python script
+CMD [ "python", "main.py"]
