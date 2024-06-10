@@ -115,8 +115,10 @@ class _TimerPageState extends State<TimerPage> {
             //For dev porpouses only
             FloatingActionButton(
               onPressed: _navigate,
-              child: Icon(Icons.add),
               backgroundColor: buttonColour,
+              child: const Icon(
+                Icons.add
+                ),
             )
           ],
         ),

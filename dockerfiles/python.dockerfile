@@ -1,11 +1,10 @@
-FROM python
+FROM python:3.8-slim
 
-WORKDIR /src/backend
+WORKDIR /app
 
-COPY requirement.txt .
-COPY src .
+COPY backend/requirements.txt .
+COPY backend/src .
 
-RUN pip install -r requirement.txt
+RUN pip install -r requirements.txt --verbose
 
 CMD [ "python", "./backend/src/main"]
-

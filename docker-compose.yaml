@@ -8,7 +8,8 @@ services:
     ports:
       - '5001:80'
     volumes: 
-      - './backend/src:/backend/src'
+      - './backend/src:/app'
+    working_dir: /app
 
   flutter:
     build:

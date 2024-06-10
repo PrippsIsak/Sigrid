@@ -14,42 +14,43 @@ thread_pool_manager = threadManager.ThreadManager()
 @app.route('/toggleAlarm', methods=['POST'])
 def onOff():
     data = request.get_json()
-    hour = data.get('hour')
-    minute = data.get('minute')
-    state = data.get('active', False)  # Assuming 'isOn' is a boolean, defaulting to False
+    if not data:
+        return jsonify({'Error': 'Invalid input'}), 400
+    try:
+        hour = int(data.get('hour'))
+        minute = int(data.get('minute'))
+        state = bool(data.get('active'))
+    except (KeyError, ValueError):
+        return jsonify({'Error': 'Invalid input'}), 400
+    
+    status = db.findAlarm(hour, minute, state)
+    if status == 'NOT OK':
+        return jsonify({'Error': 'Invalid input'})
+    
+    time = datetime.time(hour=hour, minute=minute)
 
-    #find correct alarm and start it
-    hour, minute = db.findAlarm(hour, minute, state)
-    if hour or minute == -1:
-        return jsonify({'error': 'error'}),400
-    #If a old alarm is set to be active
     if state:
-        time = datetime.time(hour=hour, minute=minute)
         thread_pool_manager.submit_task(time)
-        return jsonify({"Alarm state": state}),200
+        return jsonify({"Succes": 'Alarm has been turned on'}),200
     
     #If a active alarm is set to be deactived
     thread_pool_manager.close_task(time)
-    return jsonify({"status": "success"}),200
+    return jsonify({"Succes": "Alarm has been turned off"}),200
 
-@app.route('/coffe/timer', methods=['POST'])
-def setTimer():
-    data = request.get_json()
-    hour = int(data.get("hour", 0))
-    minute = int(data.get("minute", 0))
-
-    time = datetime.time(hour=hour, minute=minute)
-    thread_pool_manager.submit_task(time)
-    #Here I wanna start a thread that runs in the background
-    return jsonify({"status": "succes"})
 
 @app.route('/createAlarm', methods=['POST'])
 def createAlarm():
     data = request.get_json()
-    hour = data.get('hour')
-    minute = data.get('minute')
+    if not data:
+        return jsonify({'Error': 'Invalid input'}), 400
+    
+    try:
+        hour = int(data.get('hour'))
+        minute = int(data.get('minute')) 
+    except(KeyError, ValueError):
+        return jsonify({'Error': 'Invalid input'}), 400
+    
     status = db.createAlarm(hour, minute)
-
     if status != "OK":
         return jsonify({'Error': status}),400
     
@@ -61,27 +62,34 @@ def createAlarm():
 @app.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
-    username = data.get('username', 0)
-    password = data.get('password', 0)
+    if not data:
+        return jsonify({'Error': 'Invalid input'})
+    
+    try:
+        username = str(data.get('username', 0))
+        password = str(data.get('password', 0))
+    except(KeyError, ValueError):
+        return jsonify({'Error': 'Invalid data'})
+    
+    status = db.login(username, password)
+    if status !='OK':
+        return jsonify({'Error': 'Wrong password or username'}), 400
 
-    if db.login(username, password) =='OK':
-        return jsonify({'Succes': "Login success"}),200
-
-    return jsonify({'Status': 'wrong password or username'}), 400
+    return jsonify({'Succes': 'Login succesful'}), 200
 
 @app.route('/getAllAlarms', methods=['GET'])
 def getAllAlarms():
     alarms = db.getAllAlarm()
-    if alarms == Exception:
-        return jsonify({"error": "Internel Server Error"}), 500
+    if alarms == 'NOT OK':
+        return jsonify({"Error": "Invalid Input"}), 400
     return jsonify({"Alarms": alarms}), 200
 
 @app.route('/checkActive', methods=['GET'])
 def checkActive():
     active = db.getActiveAlarms()
-    if active:
-        return jsonify({'active': True})
-    return jsonify({'active': False})
+    if active == 'NOT OK':
+        return jsonify({'Error': 'Invalid input'}), 400
+    return jsonify({'active': active}), 200
 
 def run_flask():
     app.run(debug=False, host='0.0.0.0' ,port=5001)

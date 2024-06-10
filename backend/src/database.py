@@ -28,7 +28,7 @@ def getAllAlarm():
         alarms = collection.find({}, {'_id': 0})
         return list(alarms)
     except Exception as e:
-        return e
+        return 'NOT OK'
 
 def createAlarm(hour, minute):
     try:
@@ -51,17 +51,20 @@ def findAlarm(hour, minute, state):
               
         #check if alarm exist
         if alarm == None:
-            return -1, -1
+            return 'NOT OK'
         
     except Exception as e:
-        return -1, -1
+        return 'NOT OK'
     
-    return alarm['hour'], alarm['minute']
+    return 'OK'
 
 def getActiveAlarms():
     try:
         collection = client.get_database("SmartHome").get_collection('Alarms')
-        alarm = collection.find_one({'active': True}) 
-        return alarm
+        alarm = collection.find_one({'active': True})
+        if alarm == None:
+            return 'NOT OK'
+
+        return alarm.get('active')
     except Exception as e:
-        return e
+        return 'NOT OK'
