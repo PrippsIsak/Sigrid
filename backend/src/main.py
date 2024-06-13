@@ -82,6 +82,7 @@ def getAllAlarms():
     alarms = db.getAllAlarm()
     if alarms == 'NOT OK':
         return jsonify({"Error": "Invalid Input"}), 400
+    
     return jsonify({"Alarms": alarms}), 200
 
 @app.route('/checkActive', methods=['GET'])
@@ -89,8 +90,36 @@ def checkActive():
     active = db.getActiveAlarms()
     if active == 'NOT OK':
         return jsonify({'Error': 'Invalid input'}), 400
+    
     return jsonify({'active': active}), 200
 
+@app.route('/getShoppingItems', methods=['GET'])
+def getShoppingList():
+    shoppingList = db.fetchShoppingItems()
+    if shoppingList == 'NOT OK':
+        return jsonify({'Error': 'Internal server error'}), 500
+    
+    return jsonify({'Shopping items': shoppingList})
+
+@app.route('/createShoppingItems', methods=['POST'])
+def createShoppingItem():
+    data = request.get_json()
+    print(data)
+    if not data:
+        return jsonify({'Error': 'Invalid input'}), 400
+    
+    try:
+        item = str(data['shoppingItem'])
+        item.capitalize()
+        status = db.createShoppingItem(item)
+        if status == 'NOT OK':
+            return jsonify({'Error': 'Invalid input'}), 400
+        return jsonify({'Succes': 'Item added'}), 200
+    
+    except(KeyError, ValueError):
+        return jsonify({'Error': 'Invalid input'}), 400
+
+    
 def run_flask():
     app.run(debug=False, host='0.0.0.0' ,port=5001)
 

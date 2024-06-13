@@ -92,7 +92,7 @@ class _TimerPageState extends State<TimerPage> {
                         ListTile(
                         title: Text(
                           time,
-                          style: TextStyle(fontSize: 20),
+                          style: const TextStyle(fontSize: 20),
                           textAlign: TextAlign.center,
                         ),
                         onTap : () {
@@ -112,7 +112,6 @@ class _TimerPageState extends State<TimerPage> {
                     );
                   },
                 )),
-            //For dev porpouses only
             FloatingActionButton(
               onPressed: _navigate,
               backgroundColor: buttonColour,
