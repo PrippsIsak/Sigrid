@@ -4,6 +4,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:coffe_app/homePage.dart';
 
+final RouteObserver <PageRoute> routeObserver = RouteObserver<PageRoute>();
+
 void main() {
   runApp(const MyApp());
 }
@@ -21,6 +23,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       home: const LoginPage(title: 'Flutter Demo Home Page'),
+      navigatorObservers: [routeObserver],
     );
   }
 }

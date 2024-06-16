@@ -1,0 +1,32 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        
+        {
+            "name": "coffe_app",
+            "cwd": "coffe_app",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/loginPage.dart"
+        },
+        {
+            "name": "coffe_app (profile mode)",
+            "cwd": "coffe_app",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile",
+            "program": "lib/loginPage.dart"
+        },
+        {
+            "name": "coffe_app (release mode)",
+            "cwd": "coffe_app",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release",
+            "program": "lib/loginPage.dart"
+        }
+    ]
+}

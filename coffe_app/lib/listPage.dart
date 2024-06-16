@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:coffe_app/const.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:coffe_app/stateless/badRequestPge.dart';
 
 class ListPage extends StatefulWidget {
   const ListPage({super.key});
@@ -35,7 +36,7 @@ class _ListPageState extends State<ListPage> {
           _shoppingList = json.decode(response.body)["Shopping items"];
         });
       } else {
-        //TODO: fix better logic,
+        _navigate(const BadRequestPage());
       }
     } catch (error) {}
   }
@@ -45,20 +46,26 @@ class _ListPageState extends State<ListPage> {
     for (int i = 0; i < _shoppingList.length; i++) {
       if (_shoppingList[i]['checked']) {
         toBeDeleted.add(_shoppingList[i]);
-        _shoppingList.removeAt(i);
       }
     }
     if (toBeDeleted.isNotEmpty) {
       try {
         const String apiUrl = "http://192.168.0.4:5001/deleteShoppingItems";
-        http
+        await http
             .post(Uri.parse(apiUrl),
                 headers: <String, String>{
                   'Content-Type': 'application/json',
                 },
                 body: json.encode(toBeDeleted))
-            .then((response) {})
-            .catchError((error) {});
+            .then((response) {
+          if (response.statusCode != 200) {
+            _navigate(const BadRequestPage());
+          } else {
+            setState(() {
+              _shoppingList.removeWhere((listItem) => listItem['checked']);
+            });
+          }
+        }).catchError((error) {});
       } catch (error) {}
     }
   }
@@ -100,7 +107,7 @@ class _ListPageState extends State<ListPage> {
 
     try {
       String apiUrl = "http://192.168.0.4:5001/createShoppingItems";
-      final response = await http
+      await http
           .post(
         Uri.parse(apiUrl),
         headers: <String, String>{
@@ -109,6 +116,9 @@ class _ListPageState extends State<ListPage> {
         body: jsonEncode(body),
       )
           .then((response) {
+        if (response.statusCode != 200) {
+          _navigate(BadRequestPage());
+        }
         //TODO: fix later
       }).catchError((onError) {});
     } catch (error) {}
@@ -151,13 +161,11 @@ class _ListPageState extends State<ListPage> {
                   })),
           PopupMenuButton(
             onSelected: (value) {
-              if (value == 0) {
-                setState(() {
-                  _addItem();
-                });
+              if (value == 0) {                
+                  _addItem();                
               }
-              if (value == 1) {
-                _deletedItems();
+              if (value == 1) {                
+                  _deletedItems();                
               }
             },
             itemBuilder: (BuildContext context) => [

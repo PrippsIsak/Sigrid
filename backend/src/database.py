@@ -64,9 +64,10 @@ def findAlarm(hour, minute, state):
     return 'OK'
 
 def getActiveAlarms():
-    try:
+    try:    
         collection = client.get_database(DATABASE_NAME).get_collection(COLLECTION_ALARM)
         alarm = collection.find_one({'active': True})
+        print(alarm['active'])
         if alarm == None:
             return 'NOT OK'
 
@@ -86,10 +87,20 @@ def fetchShoppingItems():
 def createShoppingItem(itemName):
     try:
         collection = client.get_database(DATABASE_NAME).get_collection(COLLECTION_SHOPPINGITEMS)
-        result = collection.insert_one({'shoppingItem': itemName, 'checked': False})
-        if not result.acknowledged:
-            return 'NOT OK'
+        _ = collection.insert_one({'shoppingItem': itemName, 'checked': False})
         return 'OK'
     
     except Exception as e:
         return 'NOT OK'
+    
+def deleteShoppingItem(itemName):
+    try:
+        collection = client.get_database(DATABASE_NAME).get_collection(COLLECTION_SHOPPINGITEMS)
+        result = collection.delete_one({'shoppingItem': itemName})
+        if result.deleted_count == 1:
+            return 'OK'
+        else: 
+            return 'NOT OK'
+    except Exception as e:
+        return 'NOT OK'
+def

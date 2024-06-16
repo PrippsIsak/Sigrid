@@ -87,7 +87,7 @@ def getAllAlarms():
 
 @app.route('/checkActive', methods=['GET'])
 def checkActive():
-    active = db.getActiveAlarms()
+    active = db.getActiveAlarms()   
     if active == 'NOT OK':
         return jsonify({'Error': 'Invalid input'}), 400
     
@@ -118,6 +118,16 @@ def createShoppingItem():
     
     except(KeyError, ValueError):
         return jsonify({'Error': 'Invalid input'}), 400
+    
+@app.route('/deleteShoppingItems', methods=['post'])
+def deleteShoppingItems():
+    data = request.get_json()
+    print(data)
+    for item in data:
+        status = db.deleteShoppingItem(item['shoppingItem'])
+        if status == 'NOT OK':
+            return jsonify({'Error': 'Internal server error'}), 500
+    return jsonify({'Succes': 'items has been deleted'}), 200
 
     
 def run_flask():
