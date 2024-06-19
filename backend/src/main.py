@@ -1,18 +1,47 @@
 import datetime
 from flask import request, Flask, jsonify
-from flask_socketio import SocketIO
+from flask_socketio import SocketIO, emit, join_room, leave_room
 from flask_cors import CORS
 import threadManager
 import database as db
+from collections import defaultdict
 
 app = Flask(__name__)
-socketio = SocketIO(app)
+socketio = SocketIO(app, cors_allowed_origins="*")
 CORS(app)
 state = "Off"
 thread_pool_manager = threadManager.ThreadManager()
+user_room_map = {}
+rooms = defaultdict(set)
+
+@socketio.on('connect')
+def handle_connect():
+    user_id = request.args.get('user_id')
+    if user_id:
+        join_room(user_id)
+        user_room_map[user_id] = request.sid
+
+@socketio.on('disconnect')
+def handle_disconnect():
+    user_id = request.args.get('user_id')
+    if user_id:
+        leave_room(user_id)
+        del user_room_map[user_id]
+
+@socketio.on('join_room')
+def handle_join_room(data):
+    room = data.get('room')
+    if room:
+        join_room(room)
+        # Track room memberships
+        if room not in rooms(request.sid):
+            rooms[room].add(request.sid)
+        emit('status', {'message': f'Joined room: {room}'})
+    else:
+        emit('error', {'message': 'Room name missing or invalid'})
 
 @app.route('/toggleAlarm', methods=['POST'])
-def onOff():
+def toggle_alarm():
     data = request.get_json()
     if not data:
         return jsonify({'Error': 'Invalid input'}), 400
@@ -39,7 +68,7 @@ def onOff():
 
 
 @app.route('/createAlarm', methods=['POST'])
-def createAlarm():
+def create_alarm():
     data = request.get_json()
     if not data:
         return jsonify({'Error': 'Invalid input'}), 400
@@ -50,9 +79,9 @@ def createAlarm():
     except(KeyError, ValueError):
         return jsonify({'Error': 'Invalid input'}), 400
     
-    status = db.createAlarm(hour, minute)
+    status = db.create_alarm(hour, minute)
     if status != "OK":
-        return jsonify({'Error': status}),400
+        return jsonify({'Error': status}), 500
     
     time = datetime.time(hour=hour, minute=minute)
     thread_pool_manager.submit_task(time)
@@ -69,40 +98,40 @@ def login():
         username = str(data.get('username', 0))
         password = str(data.get('password', 0))
     except(KeyError, ValueError):
-        return jsonify({'Error': 'Invalid data'})
+        return jsonify({'Error': 'Invalid data'}), 400
     
     status = db.login(username, password)
     if status !='OK':
-        return jsonify({'Error': 'Wrong password or username'}), 400
+        return jsonify({'Error': 'Wrong password or username'}), 500
 
     return jsonify({'Succes': 'Login succesful'}), 200
 
 @app.route('/getAllAlarms', methods=['GET'])
-def getAllAlarms():
-    alarms = db.getAllAlarm()
+def get_all_alarms():
+    alarms = db.get_all_alarm()
     if alarms == 'NOT OK':
-        return jsonify({"Error": "Invalid Input"}), 400
+        return jsonify({"Error": "Invalid Input"}), 500
     
     return jsonify({"Alarms": alarms}), 200
 
 @app.route('/checkActive', methods=['GET'])
-def checkActive():
-    active = db.getActiveAlarms()   
+def check_active():
+    active = db.get_active_alarms()   
     if active == 'NOT OK':
-        return jsonify({'Error': 'Invalid input'}), 400
+        return jsonify({'Error': 'Invalid input'}), 500
     
     return jsonify({'active': active}), 200
 
 @app.route('/getShoppingItems', methods=['GET'])
-def getShoppingList():
-    shoppingList = db.fetchShoppingItems()
+def get_shopping_list():
+    shoppingList = db.fetch_shopping_items()
     if shoppingList == 'NOT OK':
         return jsonify({'Error': 'Internal server error'}), 500
     
     return jsonify({'Shopping items': shoppingList})
 
 @app.route('/createShoppingItems', methods=['POST'])
-def createShoppingItem():
+def create_shopping_item():
     data = request.get_json()
     print(data)
     if not data:
@@ -110,29 +139,29 @@ def createShoppingItem():
     
     try:
         item = str(data['shoppingItem'])
-        item.capitalize()
-        status = db.createShoppingItem(item)
+        item = item.capitalize()
+        status = db.create_shopping_item(item)
         if status == 'NOT OK':
-            return jsonify({'Error': 'Invalid input'}), 400
+            return jsonify({'Error': 'Invalid input'}), 500
         return jsonify({'Succes': 'Item added'}), 200
     
     except(KeyError, ValueError):
         return jsonify({'Error': 'Invalid input'}), 400
     
-@app.route('/deleteShoppingItems', methods=['post'])
-def deleteShoppingItems():
+@app.route('/deteShoppingItems', methods=['delete'])
+def delete_shopping_items():
     data = request.get_json()
     print(data)
     for item in data:
-        status = db.deleteShoppingItem(item['shoppingItem'])
+        status = db.delete_shopping_item(item['shoppingItem'])
         if status == 'NOT OK':
             return jsonify({'Error': 'Internal server error'}), 500
+    socketio.emit('shopping')
     return jsonify({'Succes': 'items has been deleted'}), 200
 
     
 def run_flask():
-    app.run(debug=False, host='0.0.0.0' ,port=5001)
+    socketio.run(app, host='0.0.0.0', port=5001)
 
 if __name__ == '__main__':
     run_flask()
-

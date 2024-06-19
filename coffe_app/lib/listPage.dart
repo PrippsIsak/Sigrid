@@ -52,7 +52,7 @@ class _ListPageState extends State<ListPage> {
       try {
         const String apiUrl = "http://192.168.0.4:5001/deleteShoppingItems";
         await http
-            .post(Uri.parse(apiUrl),
+            .delete(Uri.parse(apiUrl),
                 headers: <String, String>{
                   'Content-Type': 'application/json',
                 },

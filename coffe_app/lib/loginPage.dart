@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:coffe_app/homePage.dart';
+import 'package:socket_io_client/socket_io_client.dart' as io;
 
-final RouteObserver <PageRoute> routeObserver = RouteObserver<PageRoute>();
+final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
 
 void main() {
   runApp(const MyApp());
@@ -40,7 +41,8 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-
+  late io.Socket socket;
+  
   void _login() {
     String username = _usernameController.text;
     String password = _passwordController.text;
@@ -49,21 +51,23 @@ class _LoginPageState extends State<LoginPage> {
 
     final Map<String, String> payload = {
       'username': username,
-      'password':password
+      'password': password
     };
-    http.post(
+    http
+        .post(
       Uri.parse(apiUrl),
       headers: <String, String>{
-        'Content-type' : 'application/json',
+        'Content-type': 'application/json',
       },
       body: jsonEncode(payload),
-    ).then((response){
+    )
+        .then((response) {
       print('server response: ${response.body}');
-      if(response.statusCode == 200){
-          Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const HomePage()),
-          );
+      if (response.statusCode == 200) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomePage()),
+        );
       }
     }).catchError((error) {
       print("Error: $error");
@@ -83,12 +87,12 @@ class _LoginPageState extends State<LoginPage> {
             TextField(
               controller: _usernameController,
               keyboardType: TextInputType.text,
-              decoration: const InputDecoration(labelText:  'Username'),
+              decoration: const InputDecoration(labelText: 'Username'),
             ),
             TextField(
               controller: _passwordController,
               keyboardType: TextInputType.text,
-              decoration: const InputDecoration(labelText:  'Password'),
+              decoration: const InputDecoration(labelText: 'Password'),
             ),
             const SizedBox(height: 16),
             ElevatedButton(
