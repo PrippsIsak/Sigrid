@@ -16,7 +16,7 @@ class TimeActionThread(threading.Thread):
             while not self._stop_event.is_set():
                 current_time = time.localtime(time.time())
                 if (datetime.time(hour=current_time.tm_hour, minute=current_time.tm_min)) == self.time:
-                    setCoffe()
+                    setCoffe('On')
                     self.stop()
         except CancelledError:
             print("Thread Cancelled")
@@ -25,12 +25,13 @@ class TimeActionThread(threading.Thread):
     def stop(self):
         self._stop_event.set()
 
-def setCoffe():
+def setCoffe(state):
     try:
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
-        loop.run_until_complete(arduino.connect_to_websocket("On"))
+        loop.run_until_complete(arduino.connect_to_websocket(state))
         return True
     except Exception as e:
         print(e)
         return False
+

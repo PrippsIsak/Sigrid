@@ -5,6 +5,7 @@ from flask_cors import CORS
 import threadManager
 import database as db
 from collections import defaultdict
+import timer
 
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")
@@ -65,6 +66,28 @@ def toggle_alarm():
     #If a active alarm is set to be deactived
     thread_pool_manager.close_task(time)
     return jsonify({"Succes": "Alarm has been turned off"}),200
+
+@app.route('/toggleCoffe', methods=['POST'])
+def toggle_coffe():
+    data = request.get_json()
+    if not data:
+        return jsonify({'Error': 'Invalid input'}), 400
+    try:
+        state = bool(data.get('state'), False)
+    except (KeyError, ValueError):
+        return jsonify({'Error': 'Inavlid input'}), 400
+    #TODO: wrtite better logic
+    if state:
+        result = timer.setCoffe('On')
+        if not result:
+            return jsonify({'Error': 'Internal error'}), 500
+
+    else: 
+         result = timer.setCoffe('Off')
+         if not result:
+             return jsonify({'Error': 'Internal'}), 500
+         
+    return jsonify({'Succes': ''}), 200
 
 
 @app.route('/createAlarm', methods=['POST'])

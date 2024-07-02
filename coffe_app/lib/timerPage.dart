@@ -1,9 +1,11 @@
 import 'dart:convert';
-
+import 'package:coffe_app/homePage.dart';
+import 'package:coffe_app/stateless/badRequestPge.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:coffe_app/createTimerPage.dart';
 import 'package:coffe_app/const.dart';
+import 'package:coffe_app/util/NavigationHelper.dart';
 
 class TimerPage extends StatefulWidget {
   const TimerPage({Key? key}) : super(key: key);
@@ -23,29 +25,29 @@ class _TimerPageState extends State<TimerPage> {
     fetchAlarms();
   }
 
-  void _navigate() {
-    Navigator.push(context, MaterialPageRoute(builder: (context) => CreateTimerPage()));
+  void _navigate(Widget page) {
+    Navigator.push(context, MaterialPageRoute(builder: (context) => page));
   }
 
-  Future<void> fetchAlarms() async{
+  Future<void> fetchAlarms() async {
     try {
-      const String apiUrl =  "http://192.168.0.4:5001/getAllAlarms";
+      const String apiUrl = "http://192.168.0.4:5001/getAllAlarms";
       final response = await http.get(Uri.parse(apiUrl));
 
-      if (response.statusCode == 200){
+      if (response.statusCode == 200) {
         setState(() {
           print("Response body: ${response.body}");
           _alarms = json.decode(response.body)["Alarms"];
           print(_alarms);
         });
       } else {
-        print("Failed too load alarms ${response.statusCode}");
+        NavigationHelper.navigate(context, const BadRequestPage());
       }
-    }
-    catch (error){
-        print("Error: $error");
+    } catch (error) {
+      print("Error: $error");
     }
   }
+
   void _toggleOnOff(int hour, int minute, bool state) {
     // Update the URL with your Python server endpoint
     const String serverUrl = 'http://192.168.0.4:5001/toggleAlarm';
@@ -58,13 +60,15 @@ class _TimerPageState extends State<TimerPage> {
     };
 
     // Make a POST request to your Python server with the JSON body
-    http.post(
+    http
+        .post(
       Uri.parse(serverUrl),
       headers: <String, String>{
         'Content-Type': 'application/json',
       },
       body: jsonEncode(body), // Encode the body as JSON
-    ).then((response) {
+    )
+        .then((response) {
       // Handle the response from the server if needed
       print('Server response: ${response.body}');
     }).catchError((error) {
@@ -72,6 +76,7 @@ class _TimerPageState extends State<TimerPage> {
       print('Error: $error');
     });
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -84,40 +89,41 @@ class _TimerPageState extends State<TimerPage> {
           children: [
             Expanded(
                 child: ListView.builder(
-                  itemCount: _alarms.length,
-                  itemBuilder: (context, index){
-                    String time = "${_alarms[index]['hour']}:${_alarms[index]['minute']}";
-                    return Column(
-                      children: [
-                        ListTile(
-                        title: Text(
-                          time,
-                          style: const TextStyle(fontSize: 20),
-                          textAlign: TextAlign.center,
-                        ),
-                        onTap : () {
-                          setState(() {
-                            _alarms[index]['active'] = !_alarms[index]['active'];
-                            _toggleOnOff(_alarms[index]['hour'], _alarms[index]['minute'], _alarms[index]['active']);
-                          });
-                        },
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              itemCount: _alarms.length,
+              itemBuilder: (context, index) {
+                String time =
+                    "${_alarms[index]['hour']}:${_alarms[index]['minute']}";
+                return Column(children: [
+                  ListTile(
+                    title: Text(
+                      time,
+                      style: const TextStyle(fontSize: 20),
+                      textAlign: TextAlign.center,
+                    ),
+                    onTap: () {
+                      setState(() {
+                        _alarms[index]['active'] = !_alarms[index]['active'];
+                        _toggleOnOff(_alarms[index]['hour'],
+                            _alarms[index]['minute'], _alarms[index]['active']);
+                      });
+                    },
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16.0, vertical: 8.0),
 
-                        tileColor: _alarms[index]['active'] ? Colors.green.shade400 : Colors.white70,
-                        titleAlignment: ListTileTitleAlignment.center,
-                          //onTap: _,
-                      ),
-                        const Divider(),
-                      ]
-                    );
-                  },
-                )),
+                    tileColor: _alarms[index]['active']
+                        ? Colors.green.shade400
+                        : Colors.white70,
+                    titleAlignment: ListTileTitleAlignment.center,
+                    //onTap: _,
+                  ),
+                  const Divider(),
+                ]);
+              },
+            )),
             FloatingActionButton(
-              onPressed: _navigate,
+              onPressed: NavigationHelper.navigate(context, const HomePage()),
               backgroundColor: buttonColour,
-              child: const Icon(
-                Icons.add
-                ),
+              child: const Icon(Icons.add),
             )
           ],
         ),
