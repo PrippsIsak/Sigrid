@@ -5,41 +5,13 @@ from flask_cors import CORS
 import threadManager
 import database as db
 from collections import defaultdict
-import timer
+import arduino
 
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")
 CORS(app)
 state = "Off"
 thread_pool_manager = threadManager.ThreadManager()
-user_room_map = {}
-rooms = defaultdict(set)
-
-@socketio.on('connect')
-def handle_connect():
-    user_id = request.args.get('user_id')
-    if user_id:
-        join_room(user_id)
-        user_room_map[user_id] = request.sid
-
-@socketio.on('disconnect')
-def handle_disconnect():
-    user_id = request.args.get('user_id')
-    if user_id:
-        leave_room(user_id)
-        del user_room_map[user_id]
-
-@socketio.on('join_room')
-def handle_join_room(data):
-    room = data.get('room')
-    if room:
-        join_room(room)
-        # Track room memberships
-        if room not in rooms(request.sid):
-            rooms[room].add(request.sid)
-        emit('status', {'message': f'Joined room: {room}'})
-    else:
-        emit('error', {'message': 'Room name missing or invalid'})
 
 @app.route('/toggleAlarm', methods=['POST'])
 def toggle_alarm():
@@ -67,27 +39,27 @@ def toggle_alarm():
     thread_pool_manager.close_task(time)
     return jsonify({"Succes": "Alarm has been turned off"}),200
 
-@app.route('/toggleCoffe', methods=['POST'])
+@app.route('/toggleCoffee', methods=['POST'])
 def toggle_coffe():
     data = request.get_json()
+    print(data)
     if not data:
         return jsonify({'Error': 'Invalid input'}), 400
     try:
-        state = bool(data.get('state'), False)
+        state = bool(data.get('state'))
     except (KeyError, ValueError):
         return jsonify({'Error': 'Inavlid input'}), 400
-    #TODO: wrtite better logic
-    if state:
-        result = timer.setCoffe('On')
+    
+    try:
+        #TODO: fix better logic, should it send true/false or on/off, lik with frontend
+        result = arduino.connect_to_websocket(state)
         if not result:
-            return jsonify({'Error': 'Internal error'}), 500
-
-    else: 
-         result = timer.setCoffe('Off')
-         if not result:
-             return jsonify({'Error': 'Internal'}), 500
-         
-    return jsonify({'Succes': ''}), 200
+            return jsonify({'Error': 'Failed to send data to arduino'}), 500
+    except Exception as e:
+        print(f"Exception: {e}")
+        return jsonify({'Error': 'Server error'}), 500
+    
+    return jsonify({'Succes': 'Message sent to arduino'}), 200
 
 
 @app.route('/createAlarm', methods=['POST'])
@@ -184,7 +156,7 @@ def delete_shopping_items():
 
     
 def run_flask():
-    socketio.run(app, host='0.0.0.0', port=5001)
+    Flask.run(app, host='0.0.0.0', port=5001)
 
 if __name__ == '__main__':
     run_flask()

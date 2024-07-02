@@ -7,5 +7,7 @@ async def connect_to_websocket(message):
         async with websockets.connect(uri) as websocket:
             await websocket.send(message)
             print("sent data to WebSocket")
+            return True
     except websockets.exceptions as e:
-        print("Couldn't connect to websocket")  
+        print("Couldn't connect to websocket")
+        return False

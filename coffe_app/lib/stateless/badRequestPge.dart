@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:coffe_app/const.dart'; // Assuming this is your constants import
+import 'package:coffe_app/constant/widgets.dart'; // Assuming this is your constants import
 
 class BadRequestPage extends StatelessWidget {
   const BadRequestPage({Key? key}) : super(key: key);

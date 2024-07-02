@@ -1,9 +1,11 @@
-import 'package:coffe_app/const.dart';
+import 'package:coffe_app/constant/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:coffe_app/homePage.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
+import 'package:coffe_app/constant/routes.dart';
+import 'package:coffe_app/util/RouteHelper.dart';
 
 final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
 
@@ -24,7 +26,8 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       home: const LoginPage(title: 'Flutter Demo Home Page'),
-      navigatorObservers: [routeObserver],
+      onGenerateRoute: RouteHelper.generateRoute,
+      initialRoute: Routes.loginRoute,
     );
   }
 }

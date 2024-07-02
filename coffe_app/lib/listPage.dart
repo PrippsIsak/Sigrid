@@ -1,9 +1,8 @@
 import 'dart:convert';
-
-import 'package:coffe_app/const.dart';
+import 'package:coffe_app/constant/routes.dart';
+import 'package:coffe_app/constant/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:coffe_app/stateless/badRequestPge.dart';
 
 class ListPage extends StatefulWidget {
   const ListPage({super.key});
@@ -22,10 +21,6 @@ class _ListPageState extends State<ListPage> {
     _fetchList();
   }
 
-  void _navigate(Widget page) {
-    Navigator.push(context, MaterialPageRoute(builder: (context) => page));
-  }
-
   Future<void> _fetchList() async {
     try {
       const String apiUrl = "http://192.168.0.4:5001/getShoppingItems";
@@ -36,7 +31,7 @@ class _ListPageState extends State<ListPage> {
           _shoppingList = json.decode(response.body)["Shopping items"];
         });
       } else {
-        _navigate(const BadRequestPage());
+        Navigator.pushNamed(context, Routes.badRequestRoute);
       }
     } catch (error) {}
   }
@@ -59,7 +54,7 @@ class _ListPageState extends State<ListPage> {
                 body: json.encode(toBeDeleted))
             .then((response) {
           if (response.statusCode != 200) {
-            _navigate(const BadRequestPage());
+            Navigator.pushNamed(context, Routes.badRequestRoute);
           } else {
             setState(() {
               _shoppingList.removeWhere((listItem) => listItem['checked']);
@@ -117,7 +112,7 @@ class _ListPageState extends State<ListPage> {
       )
           .then((response) {
         if (response.statusCode != 200) {
-          _navigate(BadRequestPage());
+          Navigator.pushNamed(context, Routes.badRequestRoute);
         }
         //TODO: fix later
       }).catchError((onError) {});
@@ -161,13 +156,14 @@ class _ListPageState extends State<ListPage> {
                   })),
           PopupMenuButton(
             onSelected: (value) {
-              if (value == 0) {                
-                  _addItem();                
+              if (value == 0) {
+                _addItem();
               }
-              if (value == 1) {                
-                  _deletedItems();                
+              if (value == 1) {
+                _deletedItems();
               }
             },
+            //TODO: fix better popupMenu
             itemBuilder: (BuildContext context) => [
               const PopupMenuItem(value: 0, child: Text('Add item')),
               const PopupMenuItem(value: 1, child: Text('Remove checked item')),

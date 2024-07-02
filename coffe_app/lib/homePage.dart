@@ -1,11 +1,9 @@
-import 'package:coffe_app/const.dart';
+import 'package:coffe_app/constant/widgets.dart';
 import 'package:coffe_app/loginPage.dart';
-import 'package:coffe_app/timerPage.dart';
 import 'package:flutter/material.dart';
-import 'package:coffe_app/listPage.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:coffe_app/stateless/badRequestPge.dart';
+import 'package:coffe_app/constant/routes.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -23,10 +21,6 @@ class _HomePageState extends State<HomePage> with RouteAware {
     super.initState();
   }
 
-  void _navigate(Widget page) {
-    Navigator.push(context, MaterialPageRoute(builder: (context) => page));
-  }
-
   Future<void> getActiveAlarms() async {
     const String serverUrl = 'http://192.168.0.4:5001/checkActive';
 
@@ -34,100 +28,95 @@ class _HomePageState extends State<HomePage> with RouteAware {
 
     if (response.statusCode == 200) {
       setState(() {
-        activeAlarms = json.decode(response.body)['active']; // correct key name
-        print(activeAlarms);
+        activeAlarms = json.decode(response.body)['active']; 
       });
     } else {
-      _navigate(const BadRequestPage());
+      Navigator.pushNamed(context, Routes.badRequestRoute);
     }
   }
 
-    @override
-    void didChangeDependencies() {
-      super.didChangeDependencies();
-      final ModalRoute? modalRoute = ModalRoute.of(context);
-      if (modalRoute is PageRoute) {
-        routeObserver.subscribe(this, modalRoute);
-      }
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final ModalRoute? modalRoute = ModalRoute.of(context);
+    if (modalRoute is PageRoute) {
+      routeObserver.subscribe(this, modalRoute);
     }
+  }
 
-    @override
-    void dispose() {
-      routeObserver.unsubscribe(this);
-      super.dispose();
-    }
+  @override
+  void dispose() {
+    routeObserver.unsubscribe(this);
+    super.dispose();
+  }
 
-    @override
-    void didPopNext() {
-      getActiveAlarms();
-    }
+  @override
+  void didPopNext() {
+    getActiveAlarms();
+  }
 
-    @override
-    Widget build(BuildContext context) {
-      return Scaffold(
-        appBar: appBar,
-        backgroundColor: backgroundColour,
-        body: Padding(
-          padding: const EdgeInsets.all(16), // Optional padding
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment
-                    .spaceEvenly, // Space evenly between the boxes
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      _navigate(const TimerPage());
-                    },
-                    child: Container(
-                      alignment: Alignment.center,
-                      padding:
-                          const EdgeInsets.all(8), // Padding inside the border
-                      decoration: BoxDecoration(
-                        color: Colors.yellow[100],
-                        border: Border.all(
-                          color: Colors.blue, // Color of the border
-                          width: 2, // Border width
-                        ),
-                        borderRadius: BorderRadius.circular(8),
-                        // Rounded corners
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: appBar,
+      backgroundColor: backgroundColour,
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment
+                  .spaceEvenly,
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    Navigator.pushNamed(context, Routes.timerPageRoute);
+                  },
+                  child: Container(
+                    alignment: Alignment.center,
+                    padding:
+                        const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.yellow[100],
+                      border: Border.all(
+                        color: Colors.blue,
+                        width: 2, 
                       ),
-                      child: activeAlarms
-                          ? Image.asset('lib/images/coffee-machine.png',
-                              width: 120, height: 120)
-                          : Image.asset('lib/images/coffee-maker.png',
-                              width: 120, height: 120),
+                      borderRadius: BorderRadius.circular(8),
                     ),
+                    child: activeAlarms
+                        ? Image.asset('lib/images/coffee-machine.png',
+                            width: 120, height: 120)
+                        : Image.asset('lib/images/coffee-maker.png',
+                            width: 120, height: 120),
                   ),
-                  GestureDetector(
-                    onTap: () {
-                      _navigate(
-                          const ListPage()); // Replace with your desired navigation
-                    },
-                    child: Container(
-                      alignment: Alignment.center,
-                      padding:
-                          const EdgeInsets.all(8), // Padding inside the border
-                      decoration: BoxDecoration(
-                        color: Colors.yellow[100],
-                        border: Border.all(
-                          color: Colors.blue, // Color of the border
-                          width: 2, // Border width
-                        ),
-                        borderRadius: BorderRadius.circular(8),
-                        // Rounded corners
+                ),
+                GestureDetector(
+                  onTap: () {
+                      Navigator.pushNamed(context, Routes.shoppingListRoute);
+                  },
+                  child: Container(
+                    alignment: Alignment.center,
+                    padding:
+                        const EdgeInsets.all(8), 
+                    decoration: BoxDecoration(
+                      color: Colors.yellow[100],
+                      border: Border.all(
+                        color: Colors.blue,
+                        width: 2, 
                       ),
-                      child: Image.asset('lib/images/list.jpg',
-                          width: 120, height: 120), // Replace with your image
+                      borderRadius: BorderRadius.circular(8),                    
                     ),
+                    child: Image.asset('lib/images/list.jpg',
+                        width: 120, height: 120), 
                   ),
-                ],
-              ),
-            ],
-          ),
+                ),
+              ],
+            ),
+          ],
         ),
-      );
-    }
+      ),
+    );
   }
-  
+}

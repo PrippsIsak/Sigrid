@@ -1,11 +1,9 @@
 import 'dart:convert';
-import 'package:coffe_app/homePage.dart';
-import 'package:coffe_app/stateless/badRequestPge.dart';
+import 'dart:ffi';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:coffe_app/createTimerPage.dart';
-import 'package:coffe_app/const.dart';
-import 'package:coffe_app/util/NavigationHelper.dart';
+import 'package:coffe_app/constant/routes.dart';
+import 'package:coffe_app/constant/widgets.dart';
 
 class TimerPage extends StatefulWidget {
   const TimerPage({Key? key}) : super(key: key);
@@ -41,11 +39,31 @@ class _TimerPageState extends State<TimerPage> {
           print(_alarms);
         });
       } else {
-        NavigationHelper.navigate(context, const BadRequestPage());
+        Navigator.pushNamed(context, Routes.badRequestRoute);
       }
     } catch (error) {
       print("Error: $error");
     }
+  }
+
+  void _coffeOnOff(bool state) {
+    const String serverUrl = 'http://192.168.0.4:5001/toggleCoffee';
+
+    Map<String, dynamic> body = {'state': state};
+
+    http
+        .post(Uri.parse(serverUrl),
+            headers: <String, String>{'Content-Type': 'application/json'},
+            body: jsonEncode(body),
+            ).then((response) {
+      if (response.statusCode == 400) {
+        Navigator.pushNamed(context, Routes.badRequestRoute);
+      } else if (response.statusCode == 500) {
+        //TODO drop down message that says that coffe machine could not turn on
+      }
+    }).catchError((onError) {
+      print(onError);
+    });
   }
 
   void _toggleOnOff(int hour, int minute, bool state) {
@@ -120,11 +138,22 @@ class _TimerPageState extends State<TimerPage> {
                 ]);
               },
             )),
-            FloatingActionButton(
-              onPressed: NavigationHelper.navigate(context, const HomePage()),
-              backgroundColor: buttonColour,
-              child: const Icon(Icons.add),
-            )
+            //TODO: fix better popupMenu
+            PopupMenuButton(
+              onSelected: (value) {
+                if (value == 0) {
+                  Navigator.pushNamed(context, Routes.createTimerRoute);
+                }
+                if (value == 1) {
+                  _coffeOnOff(true);
+                }
+              },
+              itemBuilder: (BuildContext context) => [
+                const PopupMenuItem(value: 0, child: Text('Add coffee alarm')),
+                const PopupMenuItem(value: 1, child: Text('Turn on coffe'))
+              ],
+              icon: const Icon(Icons.account_circle_sharp, size: 40),
+            ),
           ],
         ),
       ),
