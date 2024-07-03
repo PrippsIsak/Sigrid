@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:ffi';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:coffe_app/constant/routes.dart';
@@ -13,18 +12,12 @@ class TimerPage extends StatefulWidget {
 }
 
 class _TimerPageState extends State<TimerPage> {
-  final TextEditingController _hourController = TextEditingController();
-  final TextEditingController _minuteController = TextEditingController();
   List<dynamic> _alarms = [];
 
   @override
   void initState() {
     super.initState();
     fetchAlarms();
-  }
-
-  void _navigate(Widget page) {
-    Navigator.push(context, MaterialPageRoute(builder: (context) => page));
   }
 
   Future<void> fetchAlarms() async {
@@ -42,20 +35,24 @@ class _TimerPageState extends State<TimerPage> {
         Navigator.pushNamed(context, Routes.badRequestRoute);
       }
     } catch (error) {
-      print("Error: $error");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to fetch alarms. Please try again later.')),
+     );
     }
   }
 
-  void _coffeOnOff(bool state) {
+  void _coffeOnOff(String state) {
     const String serverUrl = 'http://192.168.0.4:5001/toggleCoffee';
 
     Map<String, dynamic> body = {'state': state};
 
     http
-        .post(Uri.parse(serverUrl),
-            headers: <String, String>{'Content-Type': 'application/json'},
-            body: jsonEncode(body),
-            ).then((response) {
+        .post(
+      Uri.parse(serverUrl),
+      headers: <String, String>{'Content-Type': 'application/json'},
+      body: jsonEncode(body),
+    )
+        .then((response) {
       if (response.statusCode == 400) {
         Navigator.pushNamed(context, Routes.badRequestRoute);
       } else if (response.statusCode == 500) {
@@ -67,30 +64,26 @@ class _TimerPageState extends State<TimerPage> {
   }
 
   void _toggleOnOff(int hour, int minute, bool state) {
-    // Update the URL with your Python server endpoint
     const String serverUrl = 'http://192.168.0.4:5001/toggleAlarm';
 
-    //create payload
     Map<String, dynamic> body = {
       'hour': hour,
       'minute': minute,
       'active': state
     };
 
-    // Make a POST request to your Python server with the JSON body
     http
         .post(
       Uri.parse(serverUrl),
       headers: <String, String>{
         'Content-Type': 'application/json',
       },
-      body: jsonEncode(body), // Encode the body as JSON
+      body: jsonEncode(body), 
     )
         .then((response) {
-      // Handle the response from the server if needed
+
       print('Server response: ${response.body}');
     }).catchError((error) {
-      // Handle errors
       print('Error: $error');
     });
   }
@@ -145,12 +138,16 @@ class _TimerPageState extends State<TimerPage> {
                   Navigator.pushNamed(context, Routes.createTimerRoute);
                 }
                 if (value == 1) {
-                  _coffeOnOff(true);
+                  _coffeOnOff('On');
+                }
+                if (value == 2) {
+                  _coffeOnOff('Off');
                 }
               },
               itemBuilder: (BuildContext context) => [
                 const PopupMenuItem(value: 0, child: Text('Add coffee alarm')),
-                const PopupMenuItem(value: 1, child: Text('Turn on coffe'))
+                const PopupMenuItem(value: 1, child: Text('Turn on coffe')),
+                const PopupMenuItem(value: 2, child: Text('Turn off coffe'))
               ],
               icon: const Icon(Icons.account_circle_sharp, size: 40),
             ),

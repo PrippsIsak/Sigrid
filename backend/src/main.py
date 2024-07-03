@@ -4,8 +4,7 @@ from flask_socketio import SocketIO, emit, join_room, leave_room
 from flask_cors import CORS
 import threadManager
 import database as db
-from collections import defaultdict
-import arduino
+import util.coffeeMachine
 
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")
@@ -46,19 +45,15 @@ def toggle_coffe():
     if not data:
         return jsonify({'Error': 'Invalid input'}), 400
     try:
-        state = bool(data.get('state'))
+        state = str(data.get('state'))
+        #if state != ('On' or 'Off'):
+            #return jsonify({'Error:' 'Invalid input'}), 400
     except (KeyError, ValueError):
         return jsonify({'Error': 'Inavlid input'}), 400
     
-    try:
-        #TODO: fix better logic, should it send true/false or on/off, lik with frontend
-        result = arduino.connect_to_websocket(state)
-        if not result:
-            return jsonify({'Error': 'Failed to send data to arduino'}), 500
-    except Exception as e:
-        print(f"Exception: {e}")
-        return jsonify({'Error': 'Server error'}), 500
-    
+    result = util.coffeeMachine.setCoffe(state)
+    if not result:
+        return jsonify({'Error': 'Internal server error'}), 500
     return jsonify({'Succes': 'Message sent to arduino'}), 200
 
 
