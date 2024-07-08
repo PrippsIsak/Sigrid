@@ -5,12 +5,13 @@ from flask_cors import CORS
 import threadManager
 import database as db
 import util.coffeeMachine
+from flask_bcrypt import Bcrypt
 
 app = Flask(__name__)
-socketio = SocketIO(app, cors_allowed_origins="*")
 CORS(app)
 state = "Off"
 thread_pool_manager = threadManager.ThreadManager()
+bcrypt = Bcrypt()
 
 @app.route('/toggleAlarm', methods=['POST'])
 def toggle_alarm():
@@ -34,7 +35,6 @@ def toggle_alarm():
         thread_pool_manager.submit_task(time)
         return jsonify({"Succes": 'Alarm has been turned on'}),200
     
-    #If a active alarm is set to be deactived
     thread_pool_manager.close_task(time)
     return jsonify({"Succes": "Alarm has been turned off"}),200
 
@@ -69,6 +69,12 @@ def create_alarm():
     except(KeyError, ValueError):
         return jsonify({'Error': 'Invalid input'}), 400
     
+    if hour > 23 or hour < 0:
+        return jsonify({'Error': 'Invalid input'}), 400
+    
+    if minute > 59 or minute < 0:
+        return jsonify({'Error': 'Invalid input'}), 400
+    
     status = db.create_alarm(hour, minute)
     if status != "OK":
         return jsonify({'Error': status}), 500
@@ -86,7 +92,9 @@ def login():
     
     try:
         username = str(data.get('username', 0))
+        password_hash = Bcrypt
         password = str(data.get('password', 0))
+        
     except(KeyError, ValueError):
         return jsonify({'Error': 'Invalid data'}), 400
     
@@ -142,14 +150,15 @@ def create_shopping_item():
 def delete_shopping_items():
     data = request.get_json()
     print(data)
-    for item in data:
-        status = db.delete_shopping_item(item['shoppingItem'])
-        if status == 'NOT OK':
-            return jsonify({'Error': 'Internal server error'}), 500
-    socketio.emit('shopping')
+    try:
+        for item in data:
+            status = db.delete_shopping_item(item['shoppingItem'])
+            if status == 'NOT OK':
+                return jsonify({'Error': 'Internal server error'}), 500
+    except(KeyError, ValueError):
+        return jsonify({'Error': 'Invalid data'}), 400
     return jsonify({'Succes': 'items has been deleted'}), 200
 
-    
 def run_flask():
     Flask.run(app, host='0.0.0.0', port=5001)
 

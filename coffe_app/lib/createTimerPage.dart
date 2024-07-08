@@ -36,6 +36,8 @@ class _CreateTimerPageState extends State<CreateTimerPage> {
         .then((response) {
       if (response.statusCode != 200) {
         Navigator.pushNamed(context, Routes.badRequestRoute);
+      } else {
+        Navigator.pop(context);
       }
     }).catchError((error) {
       print("Error:  $error");
