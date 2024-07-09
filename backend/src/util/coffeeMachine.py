@@ -1,7 +1,8 @@
 import asyncio
-import arduino
+import backend.src.services.arduino as arduino
+from main import THREAD_POOL_MANAGER
 
-def setCoffe(state):
+def set_coffee(state):
     try:
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
@@ -10,4 +11,15 @@ def setCoffe(state):
     except Exception as e:
         print(e)
         return False
+    
+def set_coffee_timer(state, time):
+    try:
+        if state:
+            THREAD_POOL_MANAGER.submit_task(time)
+            return 'OK', None, 'ON'
+    
+        THREAD_POOL_MANAGER.close_task(time)
+        return 'OK', None, 'OFF'
 
+    except Exception as e:
+        return 'NOT OK', e, None

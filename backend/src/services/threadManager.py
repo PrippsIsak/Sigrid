@@ -19,6 +19,5 @@ class ThreadManager:
             future.cancel()
             
     def shutdown(self):
-        # Implement the shutdown logic here
         print("Shutting down ThreadManager...")
         self.thread_pool.shutdown(wait=False)
