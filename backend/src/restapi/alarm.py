@@ -1,6 +1,6 @@
 import datetime
 from flask import request, jsonify, Blueprint
-from main import THREAD_POOL_MANAGER
+import backend.src.services.coffee_machine as coffee
 import database as db
 alarm_bp = Blueprint('alarm', __name__)
 
@@ -22,7 +22,10 @@ def toggle_alarm():
         return jsonify({'Error': 'Invalid input'})
     
     time = datetime.time(hour=hour, minute=minute)
-    
+    result, err = coffee.set_coffee_timer(time)
+    if err != None:
+        return jsonify({'Error', 'Internal server error'}), 500
+    return jsonify({'Succes': f'Coffe machine was set to {result}'})
 
 @alarm_bp.route('/createAlarm', methods=['POST'])
 def create_alarm():
@@ -46,11 +49,12 @@ def create_alarm():
     status = db.create_alarm(hour, minute)
     if status != "OK":
         return jsonify({'Error': status}), 500
-    #TODO: fix
+
     time = datetime.time(hour=hour, minute=minute)
-    THREAD_POOL_MANAGER.submit_task(time)
-    
-    return jsonify({"Succes": "Alarm has been created"}), 200
+    result, err = coffee.set_coffee_timer(time)
+    if err != None:
+        return jsonify({'Error', 'Internal server error'}), 500
+    return jsonify({'Succes': f'Coffe machine was set to {result}'})
 
 @alarm_bp.route('/getAllAlarms', methods=['GET'])
 def get_all_alarms():

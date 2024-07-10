@@ -1,6 +1,5 @@
 from flask import Flask
 from flask_cors import CORS
-import backend.src.services.threadManager as threadManager
 from flask_bcrypt import Bcrypt
 from pymongo.mongo_client import MongoClient
 import os 
@@ -14,7 +13,6 @@ load_dotenv('/home/isak/projects/Sigrid/backend/src/variable.env')
 connectionString = os.getenv("MONGO_STRING")
 database_name = 'SmartHome'
 DATABASE = MongoClient(connectionString).get_database(database_name)
-THREAD_POOL_MANAGER = threadManager.ThreadManager()
 BCRYPT = Bcrypt()
 
 def create_app():

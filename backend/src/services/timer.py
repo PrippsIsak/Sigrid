@@ -2,7 +2,7 @@ from concurrent.futures import CancelledError
 import time
 import threading
 import datetime
-import util.coffeeMachine
+import backend.src.services.coffee_machine
 
 class TimeActionThread(threading.Thread):
     def __init__(self, time):
@@ -15,7 +15,7 @@ class TimeActionThread(threading.Thread):
             while not self._stop_event.is_set():
                 current_time = time.localtime(time.time())
                 if (datetime.time(hour=current_time.tm_hour, minute=current_time.tm_min)) == self.time:
-                    util.coffeeMachine.setCoffe('On')
+                    util.coffee_machine.setCoffe('On')
                     self.stop()
         except CancelledError:
             print("Thread Cancelled")

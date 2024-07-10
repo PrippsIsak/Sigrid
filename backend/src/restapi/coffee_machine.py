@@ -1,5 +1,5 @@
 from flask import request, jsonify, Blueprint
-import util.coffeeMachine
+import backend.src.services.coffee_machine as coffe
 
 coffee_machine_bp = Blueprint('coffe_machine', __name__)
 
@@ -10,12 +10,13 @@ def toggle_coffe():
     print(data)
     if not data:
         return jsonify({'Error': 'Invalid input'}), 400
-    try:
-        state = str(data.get('state'))
-    except (KeyError, ValueError):
-        return jsonify({'Error': 'Inavlid input'}), 400
-    
-    result = util.coffeeMachine.setCoffe(state)
-    if not result:
+  
+    state = str(data.get('state'))
+
+    if state != ('On' or 'Off'):
+        return jsonify({'Error': 'Invalid input'}, 400
+                       )
+    err = coffe.set_coffee(state)
+    if err != None:
         return jsonify({'Error': 'Internal server error'}), 500
-    return jsonify({'Succes': 'Message sent to arduino'}), 200
+    return jsonify({'Succes': f'Coffee machine was turned {state}'}), 200

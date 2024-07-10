@@ -20,6 +20,7 @@ def create_shopping_item():
         return jsonify({'Error': 'Invalid input'}), 400
     
     try:
+        #TODO: this is useless try catch
         item = str(data['shoppingItem'])
         item = item.capitalize()
         status = db.create_shopping_item(item)
