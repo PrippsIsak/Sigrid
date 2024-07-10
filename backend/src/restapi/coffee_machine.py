@@ -5,6 +5,7 @@ coffee_machine_bp = Blueprint('coffe_machine', __name__)
 
 @coffee_machine_bp('/toggleCoffee', methods=['POST'])
 def toggle_coffe():
+    """Call util to turn on and of coffee machine"""
     data = request.get_json()
     print(data)
     if not data:

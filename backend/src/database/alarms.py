@@ -3,6 +3,7 @@ from pymongo import ReturnDocument
 COLLECTION_ALARM = 'Alarms'
 
 def get_all_alarm():
+    """Function finds all alarms and return it"""
     try:
         collection = DATABASE.get_collection(COLLECTION_ALARM)
         alarms = collection.find({}, {'_id': 0})
@@ -11,6 +12,7 @@ def get_all_alarm():
         return 'NOT OK'
     
 def create_alarm(hour, minute):
+    """Create a alarm in the database"""
     try:
         collection = DATABASE.get_collection(COLLECTION_ALARM)
         collection.insert_one({'hour': hour, 'minute': minute, 'active': True})
@@ -20,6 +22,7 @@ def create_alarm(hour, minute):
 
 
 def find_alarm(hour, minute, state):
+    """Find a specific alarm and returns it"""
     try:
         print(type(hour), type(minute), type(state))
         collection = DATABASE.get_collection(COLLECTION_ALARM)
@@ -40,6 +43,7 @@ def find_alarm(hour, minute, state):
     return 'OK'
 
 def get_active_alarms():
+    """Function fins if there is any active alarms"""
     try:    
         collection = DATABASE.get_collection(COLLECTION_ALARM)
         alarm = collection.find_one({'active': True})

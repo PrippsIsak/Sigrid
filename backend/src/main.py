@@ -5,6 +5,10 @@ from flask_bcrypt import Bcrypt
 from pymongo.mongo_client import MongoClient
 import os 
 from dotenv import load_dotenv
+from restapi.user import user_bp
+from restapi.alarm import alarm_bp
+from restapi.coffee_machine import coffee_machine_bp
+from restapi.shopping_items import shopping_item_bp
 
 load_dotenv('/home/isak/projects/Sigrid/backend/src/variable.env')
 connectionString = os.getenv("MONGO_STRING")
@@ -14,13 +18,9 @@ THREAD_POOL_MANAGER = threadManager.ThreadManager()
 BCRYPT = Bcrypt()
 
 def create_app():
+    """configues the app and routes"""
     app = Flask(__name__)
     CORS(app)
-
-    from restapi.user import user_bp
-    from restapi.alarm import alarm_bp
-    from restapi.coffee_machine import coffee_machine_bp
-    from restapi.shopping_items import shopping_item_bp
 
     app.register_blueprint(user_bp)
     app.register_blueprint(alarm_bp)

@@ -3,6 +3,7 @@ import backend.src.services.arduino as arduino
 from main import THREAD_POOL_MANAGER
 
 def set_coffee(state):
+    """Turn on or off the coffe machine"""
     try:
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
@@ -13,6 +14,7 @@ def set_coffee(state):
         return False
     
 def set_coffee_timer(state, time):
+    """Starts a thread to keep track of the alarm"""
     try:
         if state:
             THREAD_POOL_MANAGER.submit_task(time)
