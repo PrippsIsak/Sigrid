@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:coffe_app/constant/routes.dart';
+import 'package:coffe_app/loginPage.dart';
 import 'package:coffe_app/constant/widgets.dart';
 
 class TimerPage extends StatefulWidget {
@@ -11,13 +12,22 @@ class TimerPage extends StatefulWidget {
   _TimerPageState createState() => _TimerPageState();
 }
 
-class _TimerPageState extends State<TimerPage> {
+class _TimerPageState extends State<TimerPage> with RouteAware{
   List<dynamic> _alarms = [];
 
   @override
   void initState() {
     super.initState();
     fetchAlarms();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final ModalRoute? modalRoute = ModalRoute.of(context);
+    if (modalRoute is PageRoute) {
+      routeObserver.subscribe(this, modalRoute);
+    }
   }
 
   Future<void> fetchAlarms() async {
@@ -36,8 +46,9 @@ class _TimerPageState extends State<TimerPage> {
       }
     } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to fetch alarms. Please try again later.')),
-     );
+        const SnackBar(
+            content: Text('Failed to fetch alarms. Please try again later.')),
+      );
     }
   }
 
@@ -78,10 +89,9 @@ class _TimerPageState extends State<TimerPage> {
       headers: <String, String>{
         'Content-Type': 'application/json',
       },
-      body: jsonEncode(body), 
+      body: jsonEncode(body),
     )
         .then((response) {
-
       print('Server response: ${response.body}');
     }).catchError((error) {
       print('Error: $error');
