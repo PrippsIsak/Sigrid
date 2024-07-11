@@ -1,6 +1,5 @@
 from flask import request, jsonify, Blueprint
-from main import BCRYPT
-import util.hashing as hash
+from util.hashing import hash_password, check_password 
 import database.user as db
 from pymongo import errors
 
@@ -13,25 +12,26 @@ def login():
     if not data:
         return jsonify({'Error': 'Invalid input'})
     
-    username = str(data.get('username', 0))
-    password = str(data.get('password', 0))    
+    username = str(data['username'])
+    password = str(data['password'])
+
     user, err = db.get_user(username)
     if err is None:
         return jsonify({'Error': 'Internal server error'}), 500
     
-    if user != None and hash.check_password(password, user['password']):
+    if user != None and check_password(password, user['password']):
         return jsonify({'Succes': 'Login succesful'}), 200
     return jsonify({'Error', 'Wrong username or passsword'}), 400
 
 @user_bp.route('/register', methods=['POST'])
 def register():
     """Create a user """
-    #TODO: fix
     data = request.get_json()
     username = str(data['username'])
     password = str(data['password'])
+    hashed_password = hash_password(password)
 
-    err = db.create_user(username, password)
+    err = db.create_user(username, hashed_password)
     
     if err != None:
          if err == errors.InvalidName:

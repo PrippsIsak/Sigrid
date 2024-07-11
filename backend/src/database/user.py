@@ -1,4 +1,4 @@
-from main import DATABASE
+from database.global_database import DATABASE
 from pymongo import errors
 
 COLLECTION_USER = 'User'

@@ -2,6 +2,7 @@ from flask import request, jsonify, Blueprint
 import database as db
 
 shopping_item_bp = Blueprint('shopping_items', __name__)
+
 @shopping_item_bp.route('/getShoppingItems', methods=['GET'])
 def get_shopping_list():
     """Calls database api and returns all shopping_list_item"""

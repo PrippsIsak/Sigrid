@@ -1,9 +1,9 @@
 from flask import request, jsonify, Blueprint
-import backend.src.services.coffee_machine as coffe
+import services.coffee_machine as coffe
 
-coffee_machine_bp = Blueprint('coffe_machine', __name__)
+coffee_machine_bp = Blueprint('coffee_machine', __name__)
 
-@coffee_machine_bp('/toggleCoffee', methods=['POST'])
+@coffee_machine_bp.route('/toggleCoffee', methods=['POST'])
 def toggle_coffe():
     """Call util to turn on and of coffee machine"""
     data = request.get_json()

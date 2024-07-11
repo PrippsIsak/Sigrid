@@ -1,5 +1,5 @@
 import asyncio
-from backend.src.services import arduino, thread_manager
+from services import arduino, thread_manager
 
 def set_coffee(state):
     """Turn on or off the coffe machine"""

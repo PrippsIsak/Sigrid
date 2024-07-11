@@ -1,4 +1,4 @@
-from main import DATABASE
+from backend.src.database.global_database import DATABASE
 from pymongo import ReturnDocument
 COLLECTION_ALARM = 'Alarms'
 

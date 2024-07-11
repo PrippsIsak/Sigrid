@@ -1,4 +1,4 @@
-from main import DATABASE
+from backend.src.database.global_database import DATABASE
 
 COLLECTION_SHOPPINGITEMS = 'ShoppingItems'
 

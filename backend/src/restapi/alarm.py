@@ -1,6 +1,6 @@
 import datetime
 from flask import request, jsonify, Blueprint
-import backend.src.services.coffee_machine as coffee
+import services.coffee_machine as coffee
 import database as db
 alarm_bp = Blueprint('alarm', __name__)
 
